@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mrkioo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            position: relative;
+        }
+
+        .background-image-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('background2.gif');
+            background-size: cover;
+            background-position: center;
+            filter: grayscale(100%) brightness(0.4) blur(3px);
+            z-index: -2;
+        }
+
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .profile-card {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            animation: fadeInScale 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #8a2be2;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+            margin: 0 auto 1.5rem auto;
+            transition: transform 0.3s ease;
+        }
+        .profile-pic:hover {
+            transform: scale(1.05);
+        }
+
+        .social-icon {
+            font-size: 2.2rem;
+            color: #e0e0e0;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+        .social-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .music-player {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            margin-top: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 0.75rem 0;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #8a2be2;
+            border-radius: 3px;
+        }
+
+        .progress-thumb {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 14px;
+            height: 14px;
+            background-color: #8a2be2;
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.7);
+            transition: transform 0.1s ease;
+        }
+        .progress-thumb:active {
+            cursor: grabbing;
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+
+        .control-button {
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+        .control-button:hover {
+            color: #8a2be2;
+            transform: scale(1);
+        }
+        .control-button:active {
+            transform: scale(0.8);
+        }
+
+        .profile-name-effect {
+            font-size: 3rem;
+            font-weight: bold;
+            display: inline-block;
+            background-image: linear-gradient(45deg, #8a2be2, #4b0082);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 5px rgba(138, 43, 226, 0.5);
+            animation: shimmerGlow 2s infinite alternate ease-in-out;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .profile-name-effect::after {
+            content: '|';
+            display: inline-block;
+            margin-left: 0.15em;
+            color: #8a2be2;
+            animation: blink-caret 0.75s step-end infinite;
+        }
+
+        .profile-name-effect.typing::after,
+        .profile-name-effect.deleting::after {
+            visibility: visible;
+        }
+        .profile-name-effect.full::after {
+            visibility: hidden;
+        }
+
+        @keyframes blink-caret {
+            from, to { visibility: hidden; }
+            50% { visibility: visible; }
+        }
+
+        @keyframes shimmerGlow {
+            0% { text-shadow: 0 0 5px rgba(138, 43, 226, 0.5); }
+            50% { text-shadow: 0 0 15px rgba(138, 43, 226, 0.8), 0 0 25px rgba(138, 43, 226, 0.4); }
+            100% { text-shadow: 0 0 5px rgba(138, 43, 226, 0.5); }
+        }
+
+        .volume-control-container {
+            position: absolute;
+            bottom: .8rem;
+            right: 1.01rem;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .volume-slider {
+            opacity: 0;
+            width: 0;
+            transition: width 0.3s ease-out, opacity 0.3s ease-out, margin-left 0.3s ease-out;
+            
+            height: 6px;
+            background-color: rgba(138, 43, 226, 0.3);
+            border-radius: 3px;
+            -webkit-appearance: none;
+            appearance: none;
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #8a2be2;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(138, 43, 226, 0.7);
+            margin-top: 0px;
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #8a2be2;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(138, 43, 226, 0.7);
+        }
+
+        .volume-control-container:hover .volume-slider {
+            opacity: 1;
+            width: 70px;
+            margin-left: 0.5rem;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            cursor: pointer;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+            text-align: center;
+        }
+
+        .overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .overlay-text {
+            color: white;
+            font-size: 2rem;
+            font-weight: 500;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 480px) {
+            .profile-card {
+                padding: 1.5rem;
+            }
+            .profile-pic {
+                width: 100px;
+                height: 100px;
+            }
+            .social-icon {
+                font-size: 1.8rem;
+            }
+            .music-player {
+                padding: 1rem;
+            }
+            .profile-name-effect {
+                font-size: 2.2rem;
+            }
+            .volume-control-container {
+                bottom: 0.75rem;
+                right: 0.75rem;
+            }
+            .volume-control-container:hover .volume-slider {
+                width: 60px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="overlay" class="overlay">
+        <span class="overlay-text">Click anywhere to continue...</span>
+    </div>
+
+    <div class="background-image-container"></div>
+
+    <canvas id="particle-canvas"></canvas>
+
+    <main class="profile-card">
+        <img id="profile-pic" class="profile-pic" src="pfp2.jpg" alt="Profile Picture">
+
+        <h1 id="profile-name" class="profile-name-effect"></h1>
+        <p id="profile-status" class="text-md text-gray-400 mb-4"></p>
+
+        <div id="social-links" class="flex justify-center space-x-4 mb-8">
+        </div>
+
+        <div class="music-player">
+            <div class="flex items-center justify-between text-sm text-gray-400 mb-2">
+                <span id="current-time">0:00</span>
+                <span id="total-time">0:00</span>
+            </div>
+            <div class="progress-bar-container" id="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+                <div class="progress-thumb" id="progress-thumb"></div>
+            </div>
+            <div class="flex items-center justify-center space-x-6">
+                <button id="prev-btn" class="control-button">&larrb;</button>
+                <button id="play-pause-btn" class="control-button text-3xl">&#9658;</button>
+                <button id="next-btn" class="control-button">&rarrb;</button>
+            </div>
+            <p id="song-title" class="text-lg font-semibold text-white mt-3"></p>
+            <p id="song-artist" class="text-sm text-gray-400"></p>
+
+            <div class="volume-control-container">
+                <button id="volume-icon-btn" class="control-button text-xl"><i class="fas fa-volume-up"></i></button>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" class="volume-slider">
+            </div>
+        </div>
+
+        <audio id="audio-player" preload="auto"></audio>
+    </main>
+
+    <script>
+        window.onload = function() {
+            const profileData = {
+                name: "markito",
+                status: "unemployment maxxing",
+                profilePic: "pfp2.jpg",
+                socials: [
+                    { name: "Discord", url: "https://discord.com/users/604779560541749272", icon: "fab fa-discord", color: "#5865F2" },
+                    { name: "Spotify", url: "https://open.spotify.com/playlist/3xK2WBYr2LunBwPMVWPKnA", icon: "fab fa-spotify", color: "#1DB954" },
+                    { name: "Tiktok", url: "https://www.tiktok.com/@.mkito", icon: "fab fa-tiktok", color: "#EE1D52" },
+                ],
+                playlist: [
+                    { title: "El Gordo Trae El Mando", artist: "Chino Pacas", audioSrc: "song3.mp3" },
+                ]
+            };
+
+            const profilePicEl = document.getElementById('profile-pic');
+            const profileNameEl = document.getElementById('profile-name');
+            const profileStatusEl = document.getElementById('profile-status');
+            const socialLinksEl = document.getElementById('social-links');
+
+            const audioPlayer = document.getElementById('audio-player');
+            const progressBarContainer = document.getElementById('progress-bar-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressThumb = document.getElementById('progress-thumb');
+            const currentTimeEl = document.getElementById('current-time');
+            const totalTimeEl = document.getElementById('total-time');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const songTitleEl = document.getElementById('song-title');
+            const songArtistEl = document.getElementById('song-artist');
+
+            const volumeIconBtn = document.getElementById('volume-icon-btn');
+            const volumeSlider = document.getElementById('volume-slider');
+
+            const overlay = document.getElementById('overlay');
+
+            let currentSongIndex = 0;
+            let audioStarted = false;
+
+            let textToType = profileData.name;
+            let charIndex = 0;
+            let isDeleting = false;
+            let typingSpeed = 100;
+            let deletingSpeed = 50;
+            let delayAfterFullType = 1500;
+            let delayAfterFullDelete = 500;
+
+            function handleTypewriter() {
+                const currentText = textToType.substring(0, charIndex);
+                profileNameEl.textContent = currentText;
+
+                profileNameEl.classList.remove('typing', 'deleting', 'full');
+                if (isDeleting) {
+                    profileNameEl.classList.add('deleting');
+                } else if (charIndex < textToType.length) {
+                    profileNameEl.classList.add('typing');
+                } else {
+                    profileNameEl.classList.add('full');
+                }
+
+                if (!isDeleting && charIndex < textToType.length) {
+                    charIndex++;
+                    setTimeout(handleTypewriter, typingSpeed);
+                } else if (isDeleting && charIndex > 0) {
+                    charIndex--;
+                    setTimeout(handleTypewriter, deletingSpeed);
+                } else if (!isDeleting && charIndex === textToType.length) {
+                    isDeleting = true;
+                    setTimeout(handleTypewriter, delayAfterFullType);
+                } else if (isDeleting && charIndex === 0) {
+                    isDeleting = false;
+                    setTimeout(handleTypewriter, delayAfterFullDelete);
+                }
+            }
+
+            let titleText = document.title;
+            let titleCharIndex = 0;
+            let isTitleDeleting = false;
+            let titleTypingSpeed = 300;
+            let titleDeletingSpeed = 200;
+            let titleDelayAfterFullType = 2000;
+            let titleDelayAfterFullDelete = 700;
+
+            function handleTitleTypewriter() {
+                const currentTitle = titleText.substring(0, titleCharIndex);
+                document.title = currentTitle + (isTitleDeleting || titleCharIndex < titleText.length ? '|' : '');
+
+                if (!isTitleDeleting && titleCharIndex < titleText.length) {
+                    titleCharIndex++;
+                    setTimeout(handleTitleTypewriter, titleTypingSpeed);
+                } else if (isTitleDeleting && titleCharIndex > 0) {
+                    titleCharIndex--;
+                    setTimeout(handleTitleTypewriter, titleDeletingSpeed);
+                } else if (!isTitleDeleting && titleCharIndex === titleText.length) {
+                    isTitleDeleting = true;
+                    setTimeout(handleTitleTypewriter, titleDelayAfterFullType);
+                } else if (isTitleDeleting && titleCharIndex === 0) {
+                    isTitleDeleting = false;
+                    setTimeout(handleTitleTypewriter, titleDelayAfterFullDelete);
+                }
+            }
+
+            function populateProfile() {
+                profilePicEl.src = profileData.profilePic;
+                profileStatusEl.textContent = profileData.status;
+
+                handleTypewriter();
+
+                socialLinksEl.innerHTML = '';
+                profileData.socials.forEach(social => {
+                    const a = document.createElement('a');
+                    a.href = social.url;
+                    a.target = "_blank";
+                    a.rel = "noopener noreferrer";
+                    a.className = "social-link";
+
+                    const iconEl = document.createElement('i');
+                    iconEl.className = `${social.icon} social-icon`;
+                    iconEl.style.color = '#e0e0e0';
+
+                    a.onmouseover = () => iconEl.style.color = social.color;
+                    a.onmouseout = () => iconEl.style.color = '#e0e0e0';
+
+                    a.appendChild(iconEl);
+                    socialLinksEl.appendChild(a);
+                });
+            }
+
+            function formatTime(seconds) {
+                if (isNaN(seconds) || seconds < 0) return "0:00";
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = Math.floor(seconds % 60);
+                return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+            }
+
+            function loadSong(index) {
+                const song = profileData.playlist[index];
+                audioPlayer.src = song.audioSrc;
+                audioPlayer.load();
+
+                songTitleEl.textContent = song.title;
+                songArtistEl.textContent = song.artist;
+                
+                audioPlayer.onloadedmetadata = () => {
+                    totalTimeEl.textContent = formatTime(audioPlayer.duration);
+                    updateProgressBar();
+                };
+
+                if (audioStarted) {
+                    playSong();
+                }
+                updatePlayPauseButton();
+            }
+
+            function updateProgressBar() {
+                const progressPercentage = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                progressBar.style.width = `${progressPercentage}%`;
+                progressThumb.style.left = `${progressPercentage}%`;
+                currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
+            }
+
+            function updatePlayPauseButton() {
+                if (audioPlayer.paused) {
+                    playPauseBtn.innerHTML = '&#9658;';
+                } else {
+                    playPauseBtn.innerHTML = '&#10074;&#10074;';
+                }
+            }
+
+            function playSong() {
+                audioPlayer.play().catch(e => console.error("Error playing audio:", e));
+                updatePlayPauseButton();
+            }
+
+            function pauseSong() {
+                audioPlayer.pause();
+                updatePlayPauseButton();
+            }
+
+            function nextSong() {
+                currentSongIndex = (currentSongIndex + 1) % profileData.playlist.length;
+                loadSong(currentSongIndex);
+            }
+
+            function prevSong() {
+                currentSongIndex = (currentSongIndex - 1 + profileData.playlist.length) % profileData.playlist.length;
+                loadSong(currentSongIndex);
+            }
+
+            playPauseBtn.addEventListener('click', () => {
+                if (audioPlayer.paused) {
+                    playSong();
+                } else {
+                    pauseSong();
+                }
+            });
+
+            nextBtn.addEventListener('click', nextSong);
+            prevBtn.addEventListener('click', prevSong);
+
+            audioPlayer.addEventListener('timeupdate', updateProgressBar);
+
+            audioPlayer.addEventListener('ended', nextSong);
+
+            let isDragging = false;
+            progressBarContainer.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                audioPlayer.pause();
+                updateProgressFromClick(e);
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    updateProgressFromClick(e);
+                }
+            });
+            window.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    audioPlayer.play().catch(e => console.error("Error resuming audio:", e));
+                }
+            });
+
+            function updateProgressFromClick(e) {
+                const rect = progressBarContainer.getBoundingClientRect();
+                let clickX = e.clientX - rect.left;
+                if (clickX < 0) clickX = 0;
+                if (clickX > rect.width) clickX = rect.width;
+
+                const newProgressPercentage = (clickX / rect.width);
+                audioPlayer.currentTime = newProgressPercentage * audioPlayer.duration;
+                updateProgressBar();
+            }
+
+            audioPlayer.volume = parseFloat(volumeSlider.value);
+
+            volumeSlider.addEventListener('input', () => {
+                audioPlayer.volume = parseFloat(volumeSlider.value);
+            });
+
+            overlay.addEventListener('click', () => {
+                overlay.style.transition = 'opacity 1s ease-out';
+                overlay.style.opacity = '0';
+                
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    audioStarted = true;
+                    loadSong(currentSongIndex);
+                    
+                    populateProfile();
+                    handleTitleTypewriter();
+                    setCanvasSize();
+                    initParticles();
+                    animateParticles();
+                }, 1000);
+            });
+
+            const canvas = document.getElementById('particle-canvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            const numParticles = 150;
+            const connectionRadius = 50;
+            const cursorRadius = 200;
+            let mouse = { x: null, y: null, radius: cursorRadius };
+
+            const particleConnectionType = 'cursor-proximity';
+
+            function setCanvasSize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+
+            window.addEventListener('mousemove', 
+                function(event){
+                    mouse.x = event.x;
+                    mouse.y = event.y;
+                }
+            );
+            window.addEventListener('mouseout', 
+                function(){
+                    mouse.x = undefined;
+                    mouse.y = undefined;
+                }
+            );
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 1.5 + 0.5;
+                    this.speedX = Math.random() * .5 - .15;
+                    this.speedY = Math.random() * .5 - .15;
+                    this.color = 'rgba(232, 224, 240, ' + (Math.random() * 0.4 + 0.2) + ')';
+                }
+
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+
+                    if (this.x < 0 || this.x > canvas.width) this.x = (this.x < 0) ? canvas.width : 0;
+                    if (this.y < 0 || this.y > canvas.height) this.y = (this.y < 0) ? canvas.height : 0;
+                }
+
+                draw() {
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            function initParticles() {
+                particles = [];
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            function animateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+
+                    if (particleConnectionType !== 'none') {
+                        for (let j = i + 1; j < particles.length; j++) {
+                            const distBetweenParticles = Math.sqrt(
+                                (particles[i].x - particles[j].x) ** 2 +
+                                (particles[i].y - particles[j].y) ** 2
+                            );
+
+                            let shouldConnect = false;
+
+                            if (particleConnectionType === 'dot-to-dot') {
+                                shouldConnect = distBetweenParticles < connectionRadius;
+                            } else if (particleConnectionType === 'cursor-proximity') {
+                                if (mouse.x !== null && mouse.y !== null) {
+                                    const distToCursor1 = Math.sqrt(
+                                        (particles[i].x - mouse.x) ** 2 +
+                                        (particles[i].y - mouse.y) ** 2
+                                    );
+                                    const distToCursor2 = Math.sqrt(
+                                        (particles[j].x - mouse.x) ** 2 +
+                                        (particles[j].y - mouse.y) ** 2
+                                    );
+                                    shouldConnect = distBetweenParticles < connectionRadius && distToCursor1 < mouse.radius && distToCursor2 < mouse.radius;
+                                }
+                            }
+
+                            if (shouldConnect) {
+                                ctx.strokeStyle = `rgba(232, 224, 240, ${1 - (distBetweenParticles / connectionRadius)})`;
+                                ctx.lineWidth = 0.5;
+                                ctx.beginPath();
+                                ctx.moveTo(particles[i].x, particles[i].y);
+                                ctx.lineTo(particles[j].x, particles[j].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+                requestAnimationFrame(animateParticles);
+            }
+
+            window.addEventListener('resize', () => {
+                setCanvasSize();
+                initParticles();
+            });
+
+            loadSong(currentSongIndex);
+        };
+    </script>
+</body>
+</html>
